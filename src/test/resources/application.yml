@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: gem-evidencegraph
+
+  datasource:
+    url: jdbc:h2:mem:gem_evidencegraph;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+    hikari:
+      pool-name: GeMEvidenceGraphTestPool
+      maximum-pool-size: 5
+      connection-timeout: 3000
+
+  jpa:
+    database: h2
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+
+server:
+  port: 8080
+
+app:
+  storage:
+    document-path: target/test-storage/documents
+    max-file-size-bytes: 10485760
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

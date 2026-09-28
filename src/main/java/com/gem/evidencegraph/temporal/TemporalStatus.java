@@ -1,0 +1,12 @@
+package com.gem.evidencegraph.temporal;
+
+public enum TemporalStatus {
+    VALID_AT_BID_DATE,
+    EXPIRED_AT_BID_DATE,
+    NOT_YET_VALID_AT_BID_DATE,
+    ISSUED_AFTER_BID,
+    ISSUED_AFTER_TENDER_PUBLICATION,
+    CONFLICTING_DATES,
+    MISSING_TEMPORAL_DATA,
+    NOT_APPLICABLE
+}

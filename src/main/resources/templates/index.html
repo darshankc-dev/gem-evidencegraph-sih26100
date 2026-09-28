@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GeM EvidenceGraph — AI-Powered Bid Compliance & Evidence Verification Platform for GeM Procurement (SIH26100 Prototype)">
+    <title>GeM EvidenceGraph — Bid Compliance & Evidence Verification Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+    <header class="app-header" id="appHeader">
+        <div class="header-container">
+            <div class="header-branding">
+                <div class="header-tag-row">
+                    <span class="header-badge header-badge-gold">Smart India Hackathon 2026</span>
+                    <span class="header-badge header-badge-blue">PS ID: SIH26100</span>
+                    <span class="header-badge header-badge-outline">Government e-Marketplace (GeM)</span>
+                </div>
+                <h1 class="app-title">GeM EvidenceGraph</h1>
+                <p class="app-subtitle">AI-Powered Bid Compliance &amp; Evidence Verification Platform</p>
+            </div>
+            <div class="header-status-panel">
+                <div class="status-indicator-card" id="systemHealthCard" title="Runtime health status from /api/health">
+                    <span class="status-dot dot-checking" id="systemHealthDot"></span>
+                    <div class="status-text-wrap">
+                        <span class="status-label-heading" id="systemHealthText">Checking System Health...</span>
+                        <span class="status-subtext" id="systemHealthSubtext">Querying /api/health</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="app-nav" id="mainNav">
+            <div class="nav-container">
+                <a href="#demoDatasetSection" class="nav-link active" data-section="demo">Demo Dataset</a>
+                <a href="#summarySection" class="nav-link" data-section="summary">Summary Cards</a>
+                <a href="#bidMatrixSection" class="nav-link" data-section="bids">Bid Analysis Table</a>
+                <a href="#pipelineSection" class="nav-link" data-section="pipeline">EvidenceGraph Architecture</a>
+                <a href="#bidDetailSection" class="nav-link" data-section="detail">Bid Detailed Analysis</a>
+                <a href="#decisionSection" class="nav-link" data-section="decision">Decision Engine</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content" id="mainContent">
+
+        <div class="notification-banner hidden" id="notificationBanner" role="alert">
+            <div class="notification-content">
+                <span class="notification-icon" id="notificationIcon">ℹ</span>
+                <span class="notification-message" id="notificationMessage">System initialized.</span>
+            </div>
+            <button type="button" class="notification-close" id="closeNotificationBtn" aria-label="Close notification">&times;</button>
+        </div>
+
+        <section class="section-card demo-card" id="demoDatasetSection">
+            <div class="card-header-flex">
+                <div>
+                    <div class="badge-group-inline">
+                        <span class="badge badge-warning">SYNTHETIC DEMONSTRATION DATASET</span>
+                        <span class="badge badge-outline" id="demoStatusBadge">Status: Checking...</span>
+                    </div>
+                    <h2 class="card-title">Synthetic Demonstration Dataset</h2>
+                    <p class="card-subtitle">
+                        Purpose: For <strong>SIH26100</strong> prototype and testing purposes only. Demonstrates deterministic statutory verification across Apex, BluePeak, and Crestline scenarios.
+                    </p>
+                </div>
+                <div class="demo-actions-group">
+                    <button type="button" id="loadDemoDatasetBtn" class="btn btn-primary demo-btn">
+                        <span class="btn-spinner hidden" id="loadDemoSpinner"></span>
+                        <span id="loadDemoBtnText">Load Demo Dataset</span>
+                    </button>
+                    <button type="button" id="resetDemoDatasetBtn" class="btn btn-secondary demo-btn">
+                        <span class="btn-spinner hidden" id="resetDemoSpinner"></span>
+                        <span id="resetDemoBtnText">Reset Demo Dataset</span>
+                    </button>
+                </div>
+            </div>
+            <div class="demo-notice-bar">
+                <div class="demo-notice-text">
+                    <strong>Backend Verified:</strong> Loads Tender <code>GEM-DEMO-2026-001</code> with 3 synthetic bids flowing through SHA-256 PDF Ingestion, Regex Claim Extraction, Mock Registry Gateway (GST/PAN/MCA/Debarment), Entity Resolution, Clause Compliance, Temporal Milestones, and Multi-Dimensional Risk.
+                </div>
+                <div class="demo-timestamp-info" id="datasetTimestampInfo">Backend State: Synchronized</div>
+            </div>
+        </section>
+
+        <section class="summary-kpi-grid" id="summarySection">
+
+            <div class="kpi-card kpi-neutral" id="cardTotalBids">
+                <div class="kpi-card-header">
+                    <span class="kpi-label">Total Bids</span>
+                    <span class="kpi-icon">📁</span>
+                </div>
+                <div class="kpi-metric" id="summaryTotalBids">—</div>
+                <div class="kpi-caption" id="captionTotalBids">Calculated from <code>/api/bids</code></div>
+            </div>
+
+            <div class="kpi-card kpi-positive" id="cardCompliantBids">
+                <div class="kpi-card-header">
+                    <span class="kpi-label">Compliant</span>
+                    <span class="kpi-icon">✓</span>
+                </div>
+                <div class="kpi-metric text-green" id="summaryCompliantBids">—</div>
+                <div class="kpi-caption">Recommended / Deterministically valid</div>
+            </div>
+
+            <div class="kpi-card kpi-warning" id="cardReviewBids">
+                <div class="kpi-card-header">
+                    <span class="kpi-label">Review Required</span>
+                    <span class="kpi-icon">⚠</span>
+                </div>
+                <div class="kpi-metric text-amber" id="summaryReviewBids">—</div>
+                <div class="kpi-caption">Discrepancy / Officer review needed</div>
+            </div>
+
+            <div class="kpi-card kpi-negative" id="cardHighRiskBids">
+                <div class="kpi-card-header">
+                    <span class="kpi-label">High Risk</span>
+                    <span class="kpi-icon">✕</span>
+                </div>
+                <div class="kpi-metric text-red" id="summaryHighRiskBids">—</div>
+                <div class="kpi-caption">Debarment or critical hard-fail</div>
+            </div>
+        </section>
+
+        <section class="section-card" id="bidMatrixSection">
+            <div class="section-header-block">
+                <div>
+                    <h2 class="section-title">Bid Compliance &amp; Risk Analysis Matrix</h2>
+                    <p class="section-subtitle">Deterministic evaluation outcomes synthesized from <code>/api/bids</code>, <code>/compliance</code>, and <code>/risk</code></p>
+                </div>
+                <div class="section-header-tools">
+                    <span class="badge badge-gray" id="tableRecordCountBadge">0 records</span>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnRefreshMatrix" title="Refresh table data">
+                        ↻ Refresh Matrix
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table" id="bidsTable">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 200px;">Bidder</th>
+                            <th style="min-width: 140px;">Bid Reference</th>
+                            <th style="min-width: 130px;">Compliance</th>
+                            <th style="min-width: 100px;">Risk</th>
+                            <th style="min-width: 100px;">Score</th>
+                            <th style="min-width: 150px;">Recommendation</th>
+                            <th style="text-align: center; min-width: 130px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bidsTableBody">
+                        <tr>
+                            <td colspan="7" class="table-empty-cell">
+                                <div class="empty-state-card" id="bidsEmptyState">
+                                    <div class="empty-state-icon">📋</div>
+                                    <h3 class="empty-state-title">No Bid Records Available</h3>
+                                    <p class="empty-state-desc">Click <strong>"Load Demo Dataset"</strong> above to ingest the SIH26100 synthetic demonstration dataset.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section-card pipeline-card" id="pipelineSection">
+            <div class="section-header-block">
+                <div>
+                    <h2 class="section-title">EvidenceGraph Architecture Pipeline</h2>
+                    <p class="section-subtitle">Visual representation of deterministic verification flow from raw document to explainable decision</p>
+                </div>
+                <span class="badge badge-blue">Deterministic Multi-Layer Pipeline</span>
+            </div>
+
+            <div class="architecture-flow-container">
+                <div class="arch-node" id="nodeDoc" data-target="tabDocs">
+                    <div class="arch-step-num">1</div>
+                    <div class="arch-icon">📄</div>
+                    <div class="arch-title">DOCUMENT</div>
+                    <div class="arch-subtitle">SHA-256 Ingestion</div>
+                    <div class="arch-status" id="nodeStatusDoc">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeClaim" data-target="tabClaims">
+                    <div class="arch-step-num">2</div>
+                    <div class="arch-icon">🔍</div>
+                    <div class="arch-title">CLAIM</div>
+                    <div class="arch-subtitle">Regex Extraction</div>
+                    <div class="arch-status" id="nodeStatusClaim">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeEvidence" data-target="tabEvidence">
+                    <div class="arch-step-num">3</div>
+                    <div class="arch-icon">🔗</div>
+                    <div class="arch-title">EVIDENCE</div>
+                    <div class="arch-subtitle">Graph Provenance</div>
+                    <div class="arch-status" id="nodeStatusEvidence">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeVerif" data-target="tabEvidence">
+                    <div class="arch-step-num">4</div>
+                    <div class="arch-icon">🛡</div>
+                    <div class="arch-title">VERIFICATION</div>
+                    <div class="arch-subtitle">Registry Adapters</div>
+                    <div class="arch-status" id="nodeStatusVerif">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeEntity" data-target="tabRisk">
+                    <div class="arch-step-num">5</div>
+                    <div class="arch-icon">👥</div>
+                    <div class="arch-title">RESOLUTION</div>
+                    <div class="arch-subtitle">Entity Matching</div>
+                    <div class="arch-status" id="nodeStatusEntity">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeComp" data-target="tabCompliance">
+                    <div class="arch-step-num">6</div>
+                    <div class="arch-icon">⚖</div>
+                    <div class="arch-title">COMPLIANCE</div>
+                    <div class="arch-subtitle">Tender Clauses</div>
+                    <div class="arch-status" id="nodeStatusComp">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeTemporal" data-target="tabTemporal">
+                    <div class="arch-step-num">7</div>
+                    <div class="arch-icon">⏱</div>
+                    <div class="arch-title">TEMPORAL</div>
+                    <div class="arch-subtitle">Validity Windows</div>
+                    <div class="arch-status" id="nodeStatusTemporal">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node" id="nodeRisk" data-target="tabRisk">
+                    <div class="arch-step-num">8</div>
+                    <div class="arch-icon">📊</div>
+                    <div class="arch-title">RISK</div>
+                    <div class="arch-subtitle">5 Dimensions</div>
+                    <div class="arch-status" id="nodeStatusRisk">Awaiting Bid</div>
+                </div>
+                <div class="arch-arrow">➔</div>
+
+                <div class="arch-node arch-node-decision" id="nodeDecision" data-target="decisionSection">
+                    <div class="arch-step-num">9</div>
+                    <div class="arch-icon">🎯</div>
+                    <div class="arch-title">DECISION</div>
+                    <div class="arch-subtitle">Deterministic Support</div>
+                    <div class="arch-status" id="nodeStatusDecision">Awaiting Bid</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card decision-hero-card" id="decisionSection">
+            <div class="decision-hero-header">
+                <div class="decision-header-info">
+                    <span class="decision-eyebrow">FINAL VERIFICATION OUTCOME</span>
+                    <h2 class="decision-hero-title">Procurement Officer Decision Support</h2>
+                    <p class="decision-hero-subtext">Deterministic recommendation synthesized across compliance, temporal, and multi-dimensional risk evaluations.</p>
+                </div>
+                <div class="decision-badge-block">
+                    <div class="decision-badge badge-pending" id="decisionBadge">AWAITING SELECTION</div>
+                </div>
+            </div>
+
+            <div class="decision-metrics-bar">
+                <div class="decision-metric-item">
+                    <span class="decision-metric-label">Overall Risk Score</span>
+                    <span class="decision-metric-val" id="decisionScoreValue">—</span>
+                    <span class="decision-metric-sub">Scale: 0 to 100</span>
+                </div>
+                <div class="decision-metric-item">
+                    <span class="decision-metric-label">Risk Level</span>
+                    <span class="decision-metric-val" id="decisionLevelValue">—</span>
+                    <span class="decision-metric-sub" id="decisionLevelSub">Threshold-based</span>
+                </div>
+                <div class="decision-metric-item">
+                    <span class="decision-metric-label">Hard Fail Triggered</span>
+                    <span class="decision-metric-val" id="decisionHardFailValue">—</span>
+                    <span class="decision-metric-sub" id="decisionHardFailSub">Statutory disqualifier</span>
+                </div>
+                <div class="decision-metric-item">
+                    <span class="decision-metric-label">Tender Compliance</span>
+                    <span class="decision-metric-val" id="decisionComplianceRatio">—</span>
+                    <span class="decision-metric-sub" id="decisionComplianceStatus">—</span>
+                </div>
+            </div>
+
+            <div class="decision-reason-box">
+                <div class="reason-header">
+                    <span class="reason-icon">💡</span>
+                    <strong>Deterministic Decision Findings:</strong>
+                </div>
+
+                <div class="decision-concise-findings" id="decisionConciseFindings">
+                    <p class="reason-text-placeholder">
+                        Select a bid from the matrix above and click "View Analysis" to inspect the synthesized decision assessment.
+                    </p>
+                </div>
+
+                <details class="decision-full-reason-toggle" id="decisionFullReasonToggle">
+                    <summary class="full-reason-summary">
+                        <span class="full-reason-toggle-btn">
+                            <span id="fullReasonToggleLabel">View Full Deterministic Reason</span>
+                            <span class="toggle-arrow">▾</span>
+                        </span>
+                    </summary>
+                    <div class="full-reason-content">
+                        <p class="reason-text" id="decisionReasonText">
+                            Select a bid from the matrix above and click "View Analysis" to inspect the synthesized decision assessment.
+                        </p>
+                        <div class="reason-summary-block">
+                            <strong>Assessment Summary: </strong>
+                            <span id="decisionSummaryText">Awaiting active bid selection.</span>
+                        </div>
+                    </div>
+                </details>
+
+                <div class="decision-legal-disclaimer">
+                    <strong>Statutory Notice:</strong> GeM EvidenceGraph provides deterministic, auditable decision support. Final procurement award or rejection remains under the exclusive statutory authority of the designated Procurement Officer.
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card bid-detail-panel" id="bidDetailSection">
+            <div class="section-header-block">
+                <div>
+                    <div class="badge-group-inline">
+                        <span class="badge badge-blue" id="activeBidRefBadge">NO BID SELECTED</span>
+                        <span class="badge badge-gray" id="activeBidderNameBadge">Select a bid above</span>
+                    </div>
+                    <h2 class="section-title">Detailed Bid Analysis Dossier</h2>
+                    <p class="section-subtitle">Itemized compliance, risk dimensions, temporal chronologies, claims, and verified evidence</p>
+                </div>
+            </div>
+
+            <div class="detail-tabs-bar" id="detailTabsBar">
+                <button type="button" class="detail-tab-btn active" data-tab="tabOverview">A. Bid Overview</button>
+                <button type="button" class="detail-tab-btn" data-tab="tabCompliance">B. Compliance</button>
+                <button type="button" class="detail-tab-btn" data-tab="tabRisk">C. Risk Assessment</button>
+                <button type="button" class="detail-tab-btn" data-tab="tabTemporal">D. Temporal Verification</button>
+                <button type="button" class="detail-tab-btn" data-tab="tabClaims">E. Claims</button>
+                <button type="button" class="detail-tab-btn" data-tab="tabEvidence">F. Evidence</button>
+                <button type="button" class="detail-tab-btn" data-tab="tabDocs">G. Documents</button>
+            </div>
+
+            <div class="detail-tab-content active" id="tabOverview">
+                <div class="overview-grid" id="bidOverviewGrid">
+                    <div class="overview-item">
+                        <div class="overview-label">Bidder Legal Name</div>
+                        <div class="overview-value" id="overviewBidderName">—</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-label">Bid Reference</div>
+                        <div class="overview-value font-mono" id="overviewBidRef">—</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-label">Tender Reference</div>
+                        <div class="overview-value font-mono" id="overviewTenderRef">—</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-label">Tender Title</div>
+                        <div class="overview-value" id="overviewTenderTitle">—</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-label">Submission Date</div>
+                        <div class="overview-value" id="overviewSubmissionDate">—</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="overview-label">Bid Status</div>
+                        <div class="overview-value" id="overviewBidStatus"><span class="badge badge-gray">—</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tabCompliance">
+                <div class="compliance-summary-bar" id="complianceSummaryBar">
+                    <div class="compliance-metric-box">
+                        <span class="comp-box-label">Overall Status</span>
+                        <div id="complianceOverallBadge"><span class="badge badge-gray">—</span></div>
+                    </div>
+                    <div class="compliance-metric-box">
+                        <span class="comp-box-label">Compliance Ratio</span>
+                        <span class="comp-box-val" id="complianceRatioValue">—</span>
+                    </div>
+                    <div class="compliance-metric-box">
+                        <span class="comp-box-label">Mandatory Reqs</span>
+                        <span class="comp-box-val" id="complianceMandatoryCount">—</span>
+                    </div>
+                    <div class="compliance-metric-box">
+                        <span class="comp-box-label">Compliant</span>
+                        <span class="comp-box-val text-green" id="complianceCompliantCount">—</span>
+                    </div>
+                    <div class="compliance-metric-box">
+                        <span class="comp-box-label">Non-Compliant</span>
+                        <span class="comp-box-val text-red" id="complianceNonCompliantCount">—</span>
+                    </div>
+                </div>
+
+                <h3 class="subsection-title">Tender Requirements Evaluation</h3>
+                <div class="table-responsive">
+                    <table class="data-table" id="complianceTable">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 140px;">Requirement</th>
+                                <th style="min-width: 180px;">Name</th>
+                                <th style="min-width: 100px;">Type</th>
+                                <th style="min-width: 90px;">Mandatory</th>
+                                <th style="min-width: 120px;">Status</th>
+                                <th style="min-width: 250px;">Evidence / Findings</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complianceTableBody">
+                            <tr>
+                                <td colspan="6" class="table-empty-cell">
+                                    <div class="empty-state-inline">Select a bid to inspect compliance results.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tabRisk">
+
+                <h3 class="subsection-title">Multi-Dimensional Risk Breakdown (5 Dimensions)</h3>
+                <div class="dimension-cards-grid" id="dimensionCardsGrid">
+
+                    <div class="dim-card" id="dimEligibility">
+                        <div class="dim-card-header">
+                            <span class="dim-name">ELIGIBILITY</span>
+                            <span class="badge badge-gray" id="dimBadgeEligibility">—</span>
+                        </div>
+                        <div class="dim-score-block">
+                            <span class="dim-score-num" id="dimScoreEligibility">—</span>
+                            <span class="dim-score-denom">/ 100</span>
+                        </div>
+                        <div class="dim-findings-count" id="dimFindingsEligibility">0 findings</div>
+                        <div class="dim-summary-text" id="dimSummaryEligibility">Awaiting evaluation</div>
+                    </div>
+
+                    <div class="dim-card" id="dimDocIntegrity">
+                        <div class="dim-card-header">
+                            <span class="dim-name">DOCUMENT_INTEGRITY</span>
+                            <span class="badge badge-gray" id="dimBadgeDocIntegrity">—</span>
+                        </div>
+                        <div class="dim-score-block">
+                            <span class="dim-score-num" id="dimScoreDocIntegrity">—</span>
+                            <span class="dim-score-denom">/ 100</span>
+                        </div>
+                        <div class="dim-findings-count" id="dimFindingsDocIntegrity">0 findings</div>
+                        <div class="dim-summary-text" id="dimSummaryDocIntegrity">Awaiting evaluation</div>
+                    </div>
+
+                    <div class="dim-card" id="dimConsistency">
+                        <div class="dim-card-header">
+                            <span class="dim-name">CONSISTENCY</span>
+                            <span class="badge badge-gray" id="dimBadgeConsistency">—</span>
+                        </div>
+                        <div class="dim-score-block">
+                            <span class="dim-score-num" id="dimScoreConsistency">—</span>
+                            <span class="dim-score-denom">/ 100</span>
+                        </div>
+                        <div class="dim-findings-count" id="dimFindingsConsistency">0 findings</div>
+                        <div class="dim-summary-text" id="dimSummaryConsistency">Awaiting evaluation</div>
+                    </div>
+
+                    <div class="dim-card" id="dimTemporal">
+                        <div class="dim-card-header">
+                            <span class="dim-name">TEMPORAL</span>
+                            <span class="badge badge-gray" id="dimBadgeTemporal">—</span>
+                        </div>
+                        <div class="dim-score-block">
+                            <span class="dim-score-num" id="dimScoreTemporal">—</span>
+                            <span class="dim-score-denom">/ 100</span>
+                        </div>
+                        <div class="dim-findings-count" id="dimFindingsTemporal">0 findings</div>
+                        <div class="dim-summary-text" id="dimSummaryTemporal">Awaiting evaluation</div>
+                    </div>
+
+                    <div class="dim-card" id="dimVerification">
+                        <div class="dim-card-header">
+                            <span class="dim-name">VERIFICATION</span>
+                            <span class="badge badge-gray" id="dimBadgeVerification">—</span>
+                        </div>
+                        <div class="dim-score-block">
+                            <span class="dim-score-num" id="dimScoreVerification">—</span>
+                            <span class="dim-score-denom">/ 100</span>
+                        </div>
+                        <div class="dim-findings-count" id="dimFindingsVerification">0 findings</div>
+                        <div class="dim-summary-text" id="dimSummaryVerification">Awaiting evaluation</div>
+                    </div>
+                </div>
+
+                <div class="entity-resolution-card" style="margin-top: 1.5rem;">
+                    <div class="card-header-flex">
+                        <div>
+                            <h4 style="font-size: 1rem; font-weight: 700;">Deterministic Identity Resolution</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary);">Cross-registry identity match between PAN, GSTIN, Udyam, and MCA legal records</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span id="entityMatchStatusBadge"><span class="badge badge-gray">—</span></span>
+                            <span style="font-size: 0.85rem;">Confidence: <strong id="entityConfidenceValue">—</strong></span>
+                        </div>
+                    </div>
+                    <div class="entity-explanation-box" style="margin-top: 0.5rem;">
+                        <span id="entityExplanationText">Select a bid to inspect entity resolution results.</span>
+                    </div>
+                </div>
+
+                <div class="risk-findings-section" style="margin-top: 1.5rem;">
+                    <h3 class="subsection-title">Auditable Risk Findings</h3>
+                    <div class="table-responsive">
+                        <table class="data-table" id="riskFindingsTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 120px;">Code</th>
+                                    <th style="min-width: 140px;">Dimension</th>
+                                    <th style="min-width: 100px;">Severity</th>
+                                    <th style="min-width: 180px;">Finding Title</th>
+                                    <th style="min-width: 260px;">Description</th>
+                                    <th style="min-width: 140px;">Rule Applied</th>
+                                    <th style="min-width: 70px;">Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody id="riskFindingsTableBody">
+                                <tr>
+                                    <td colspan="7" class="table-empty-cell">
+                                        <div class="empty-state-inline">No risk findings recorded for this bid.</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tabTemporal">
+                <div class="temporal-summary-bar" id="temporalSummaryBar">
+                    <div class="temporal-metric">Total Evaluated: <strong id="tempTotalCount">—</strong></div>
+                    <div class="temporal-metric text-green">Valid: <strong id="tempValidCount">—</strong></div>
+                    <div class="temporal-metric text-red">Expired: <strong id="tempExpiredCount">—</strong></div>
+                    <div class="temporal-metric text-amber">Future Validity: <strong id="tempFutureCount">—</strong></div>
+                    <div class="temporal-metric text-amber">Post-Tender Pub: <strong id="tempPostTenderCount">—</strong></div>
+                    <div class="temporal-metric text-red">Issued Post-Bid: <strong id="tempPostBidCount">—</strong></div>
+                    <div class="temporal-metric text-red">Conflicting: <strong id="tempConflictCount">—</strong></div>
+                    <div class="temporal-metric text-muted">Not Applicable: <strong id="tempNotAppCount">—</strong></div>
+                </div>
+
+                <h3 class="subsection-title">Temporal Findings &amp; Validity Windows</h3>
+                <div class="table-responsive">
+                    <table class="data-table" id="temporalTable">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 120px;">Evidence ID</th>
+                                <th style="min-width: 130px;">Issue Date</th>
+                                <th style="min-width: 130px;">Valid From</th>
+                                <th style="min-width: 130px;">Valid Until</th>
+                                <th style="min-width: 130px;">Reference Date</th>
+                                <th style="min-width: 140px;">Status</th>
+                                <th style="min-width: 250px;">Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="temporalTableBody">
+                            <tr>
+                                <td colspan="7" class="table-empty-cell">
+                                    <div class="empty-state-inline">Temporal verification has not been performed yet.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tabClaims">
+                <h3 class="subsection-title">Extracted Claims (Regex &amp; Layout Deterministic Pipeline)</h3>
+                <div class="table-responsive">
+                    <table class="data-table" id="claimsTable">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 160px;">Claim Field</th>
+                                <th style="min-width: 180px;">Observed Value</th>
+                                <th style="min-width: 180px;">Normalized Value</th>
+                                <th style="min-width: 90px;">Confidence</th>
+                                <th style="min-width: 120px;">Method</th>
+                                <th style="min-width: 160px;">Source Document</th>
+                                <th style="min-width: 80px;">Page</th>
+                            </tr>
+                        </thead>
+                        <tbody id="claimsTableBody">
+                            <tr>
+                                <td colspan="7" class="table-empty-cell">
+                                    <div class="empty-state-inline">No extracted claims available.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tabEvidence">
+                <h3 class="subsection-title">Verified Evidence Records</h3>
+                <div class="table-responsive" style="margin-bottom: 1.5rem;">
+                    <table class="data-table" id="evidenceTable">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 140px;">Evidence Type</th>
+                                <th style="min-width: 120px;">Source Type</th>
+                                <th style="min-width: 140px;">Attribute</th>
+                                <th style="min-width: 180px;">Value</th>
+                                <th style="min-width: 130px;">Status</th>
+                                <th style="min-width: 90px;">Confidence</th>
+                                <th style="min-width: 160px;">Provenance Hash</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evidenceTableBody">
+                            <tr>
+                                <td colspan="7" class="table-empty-cell">
+                                    <div class="empty-state-inline">No evidence records available.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="subsection-title">Graph Relationship Topology</h3>
+                <div class="evidence-graph-container" id="evidenceGraphContainer">
+                    <div class="empty-state-inline" id="evidenceEmptyState">No graph relationships attached.</div>
+                    <div class="evidence-grid hidden" id="evidenceGrid"></div>
+                </div>
+            </div>
+
+            <div class="detail-tab-content" id="tabDocs">
+                <h3 class="subsection-title">Ingested Procurement Documents</h3>
+                <div class="table-responsive">
+                    <table class="data-table" id="documentsTable">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 180px;">File Name</th>
+                                <th style="min-width: 120px;">Document Type</th>
+                                <th style="min-width: 120px;">Extraction Status</th>
+                                <th style="min-width: 120px;">Integrity Status</th>
+                                <th style="min-width: 160px;">SHA-256 Hash</th>
+                                <th style="min-width: 140px;">Uploaded At</th>
+                                <th style="min-width: 100px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentsTableBody">
+                            <tr>
+                                <td colspan="7" class="table-empty-cell">
+                                    <div class="empty-state-inline">No documents ingested for this bid.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <details class="section-card advanced-controls" id="advancedControls">
+            <summary class="advanced-controls-summary">
+                <span class="advanced-title">
+                    <span class="advanced-icon">⚙️</span>
+                    <span>Advanced / Developer Controls</span>
+                </span>
+                <span class="advanced-badge">Debug UUID Lookup &amp; Manual Pipeline Triggers</span>
+            </summary>
+            <div class="advanced-controls-body">
+
+                <div class="direct-lookup-bar">
+                    <label for="bidIdInput" class="lookup-label">Inspect Specific Bid by UUID:</label>
+                    <div class="lookup-input-group">
+                        <input type="text" id="bidIdInput" class="input-text font-mono" placeholder="Enter Bid UUID e.g. ea814d7f-d426-407b-ad59-82025d794bf7" spellcheck="false" autocomplete="off">
+                        <button type="button" id="loadBidBtn" class="btn btn-primary btn-sm">Load UUID</button>
+                        <button type="button" id="clearBidBtn" class="btn btn-secondary btn-sm">Clear Selection</button>
+                    </div>
+                    <span class="lookup-status-text" id="bidLookupStatus">Select a bid above or query by unique UUID.</span>
+                </div>
+
+                <div class="action-toolbar-block" id="actionToolbarSection">
+                    <div class="toolbar-title-wrap">
+                        <span class="toolbar-title">Manual Backend Pipeline Triggers</span>
+                        <span class="toolbar-subtitle">Execute deterministic engine evaluations on the currently selected bid</span>
+                    </div>
+                    <div class="toolbar-buttons-grid">
+                        <button type="button" class="btn btn-action" id="btnRunVerification" disabled>
+                            <span class="btn-spinner hidden" id="spinnerVerification"></span>
+                            Run Registry Verification
+                        </button>
+                        <button type="button" class="btn btn-action" id="btnEvaluateCompliance" disabled>
+                            <span class="btn-spinner hidden" id="spinnerCompliance"></span>
+                            Evaluate Compliance
+                        </button>
+                        <button type="button" class="btn btn-action" id="btnRunTemporal" disabled>
+                            <span class="btn-spinner hidden" id="spinnerTemporal"></span>
+                            Run Temporal Check
+                        </button>
+                        <button type="button" class="btn btn-action" id="btnEvaluateRisk" disabled>
+                            <span class="btn-spinner hidden" id="spinnerRisk"></span>
+                            Evaluate Risk
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btnRefreshAssessment" disabled>
+                            <span class="btn-spinner hidden" id="spinnerRefresh"></span>
+                            Refresh Bid Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+    </main>
+
+    <div class="modal-overlay hidden" id="docDetailsModal" role="dialog" aria-modal="true" aria-labelledby="modalDocTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalDocTitle">Document Cryptographic Metadata</h3>
+                <button type="button" class="modal-close" id="closeDocModalBtn" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalDocBody">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeDocModalFooterBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div class="footer-col-left">
+                <strong>GeM EvidenceGraph</strong> — AI-Powered Bid Compliance Verification Platform
+                <div class="footer-subtext">Smart India Hackathon 2026 Evaluation • Problem Statement ID: SIH26100</div>
+            </div>
+            <div class="footer-col-right">
+                <span class="footer-pill">Deterministic Monolith</span>
+                <span class="footer-pill">Java 17 • Spring Boot</span>
+                <span class="footer-pill">PostgreSQL / H2 Compatible</span>
+            </div>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
